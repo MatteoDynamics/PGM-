@@ -44,36 +44,37 @@ void ignore_comments(FILE *file)
  * @param filename name of file
  */
 
-void allocate_data(pgm_image*data_base, const char*filename, int *number_of_pgm)
+void allocate_data(pgm_image*data_base, const char*filename, int number_of_pgm)
 {
+    number_of_pgm =number_of_pgm -1;
     FILE* pgm_file = fopen(filename, "r");
     if(pgm_file == NULL)
     {
         printf("couldnt find the file\n");
-        *number_of_pgm =*number_of_pgm -1;
+        number_of_pgm =number_of_pgm -1;
         return 1;
     }
     ignore_comments(pgm_file);
-    fscanf(pgm_file, "%s" , data_base[*number_of_pgm].type);
-    if(strcmp(data_base[*number_of_pgm].type, "P2"))
+    fscanf(pgm_file, "%s" , data_base[0].type);
+    if(strcmp(data_base[0].type, "P2"))
     {
         printf("worng type of file\n");
         return 1;
     }
     ignore_comments(pgm_file);
 
-    fscanf(pgm_file, "%d %d", &(data_base[*number_of_pgm].width), &(data_base[*number_of_pgm].height));
+    fscanf(pgm_file, "%d %d", &(data_base[0].width), &(data_base[0].height));
     ignore_comments(pgm_file);
 
-    fscanf(pgm_file, "%d", &(data_base[*number_of_pgm].max));
+    fscanf(pgm_file, "%d", &(data_base[0].max));
     ignore_comments(pgm_file);
 
-    data_base[*number_of_pgm].data = malloc(data_base[*number_of_pgm].height * sizeof(unsigned int*));
+    data_base[0].data = malloc(data_base[0].height * sizeof(unsigned int*));
 
-    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    for (int i = 0; i < data_base[0].height; i++) 
     {
-            data_base[*number_of_pgm].data[i]= malloc(data_base[*number_of_pgm].width* sizeof(unsigned int));
-            if (data_base[*number_of_pgm].data[i] == NULL) 
+            data_base[0].data[i]= malloc(data_base[0].width* sizeof(unsigned int));
+            if (data_base[0].data[i] == NULL) 
             {
                 printf("malloc failed\n");
                 return 1;
@@ -85,17 +86,16 @@ void allocate_data(pgm_image*data_base, const char*filename, int *number_of_pgm)
      * @brief reading data into dynamicly allocated data_base 
      */
     
-    for (int i = 0; i < data_base[*number_of_pgm].height; i++)
+    for (int i = 0; i < data_base[0].height; i++)
             {
-                for(int j=0; j< data_base[*number_of_pgm].width; j++)
+                for(int j=0; j< data_base[0].width; j++)
                 {
                 ignore_comments(pgm_file);
-                fscanf(pgm_file,"%d", &(data_base[*number_of_pgm].data[i][j]));
+                fscanf(pgm_file,"%d", &(data_base[0].data[i][j]));
                 ignore_comments(pgm_file);
                 }
             }
     fclose(pgm_file);
-    *number_of_pgm = *number_of_pgm+1;
 }
 
 
@@ -133,18 +133,17 @@ char * file_name_input()
  * @param pgm 
  */
 
-void print_context(pgm_image * data_base, int number_of_pgm)
+void print_context(pgm_image * data_base)
 {
-    number_of_pgm = number_of_pgm-1;
-    printf("type = %s\n", data_base[number_of_pgm].type);
-    printf("width = %d\n", data_base[number_of_pgm].width);
-    printf("height = %d\n", data_base[number_of_pgm].height);
-    printf("max = %d\n", data_base[number_of_pgm].max);
-    for (int i = 0 ; i<data_base[number_of_pgm].height; i++)
+    printf("type = %s\n", data_base[0].type);
+    printf("width = %d\n", data_base[0].width);
+    printf("height = %d\n", data_base[0].height);
+    printf("max = %d\n", data_base[0].max);
+    for (int i = 0 ; i<data_base[0].height; i++)
     {
-        for (int j=0 ; j< data_base[number_of_pgm].width; j++)
+        for (int j=0 ; j< data_base[0].width; j++)
         {
-            printf("%d ", data_base[number_of_pgm].data[i][j]);
+            printf("%d ", data_base[0].data[i][j]);
         }
         printf("\n");
     }
@@ -161,8 +160,7 @@ void allocate_tab(pgm_image * data_base, int * number_of_pgm)
         *number_of_pgm =*number_of_pgm -1;
         return 1;
     }
-    *number_of_pgm = *number_of_pgm -1;
-    printf("size of struct = %d", *number_of_pgm);
+   // printf("size of struct = %d", sizeof(struct PGM));
 }
 void menu(int *option)
 {   
@@ -187,20 +185,10 @@ int main()
         { 
         fflush(stdin);
         char *filename = file_name_input();
-        number_of_pgm = number_of_pgm +1;
-        data_base = realloc(data_base,sizeof(struct PGM)*number_of_pgm);
-        if (data_base==NULL)
-    {
-        printf("Couldnt allocate a memory");
-            number_of_pgm =number_of_pgm -1;
-        return 1;
-    }
-        number_of_pgm = number_of_pgm -1;
-       // allocate_tab(data_base, &number_of_pgm);
-        printf("\nobraz[%d]\n", number_of_pgm);
-        allocate_data(data_base, filename, &number_of_pgm);
-        //number_of_pgm = 0;
-        print_context(data_base, number_of_pgm);
+        allocate_tab(data_base, &number_of_pgm);
+        printf("\nobraz[%d]\n", number_of_pgm-1);
+        allocate_data(&data_base, filename, number_of_pgm);
+        print_context(&data_base);
         
         }break;
 

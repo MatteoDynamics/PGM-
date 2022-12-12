@@ -154,7 +154,7 @@ void allocate_tab(pgm_image * data_base, int * number_of_pgm)
 {
     *number_of_pgm = *number_of_pgm +1;
     //printf("number = %d", *number_of_pgm);
-    data_base = realloc(data_base,sizeof(struct PGM)*(*number_of_pgm));
+    data_base = realloc(data_base,sizeof(pgm_image)*(*number_of_pgm));
     if (data_base==NULL)
     {
         printf("Couldnt allocate a memory");
@@ -171,6 +171,46 @@ void menu(int *option)
     scanf("%d",&*option);
     
 }
+
+void delete_pgm(pgm_image * data_base, int *number_of_pgm)
+{
+    int index;
+    printf("Type in number to delete: ");
+    scanf("%d", &index);
+    printf("number = %d",*number_of_pgm);
+    if (index < 0 || index > *number_of_pgm)
+    {
+        printf("Error: invalid index\n");
+        return 0;
+    }
+    index = index -1;
+    printf("\n index = %d\n", index);
+
+    // Shift all elements after the index-th element one position to the left
+    for (int i = index; i < *number_of_pgm - 1; i++) 
+    {
+        data_base[i] = data_base[i + 1];
+    }
+
+    // Resize the array by one element
+    *number_of_pgm = *number_of_pgm - 1;
+    data_base = realloc(data_base, sizeof(pgm_image) * (*number_of_pgm));
+    if (data_base == NULL)
+    {
+        printf("Error: realloc failed\n");
+        return 0;
+    }
+}
+
+void print_pgm_list(pgm_image *data_base, int number_of_pgm)
+{
+    printf("List of PGM images:\n");
+    for (int i = 0; i < number_of_pgm; i++)
+    {
+        //printf("Image %d: %s\n", i + 1, data_base[i].name);
+    }
+}
+
 
 int main()
 {
@@ -211,7 +251,8 @@ int main()
          */
         case 2:
         {
-        
+            delete_pgm(data_base, &number_of_pgm);
+            
         }break;
 
 
@@ -221,7 +262,7 @@ int main()
          */
         case 3:
         {
-            
+             //print_pgm_list(data_base, number_of_pgm);
         }break;
 
 

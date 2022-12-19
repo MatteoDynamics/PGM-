@@ -1,2 +1,1 @@
-
-        printf("Error: invalid index\n");
+p2

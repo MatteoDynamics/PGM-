@@ -16,7 +16,9 @@ typedef struct PGM
    int height;
    int max;
    int **data;
+   char * filename;
 }pgm_image;
+
 
 /**
  * @function that ignores comments and whitetypes
@@ -52,7 +54,8 @@ void allocate_data(pgm_image*data_base, const char*filename, int *number_of_pgm)
         printf("couldnt find the file\n");
         *number_of_pgm =*number_of_pgm -1;
         return 1;
-    }
+    }data_base[*number_of_pgm].filename = malloc(strlen(filename) + 1);
+  strcpy(data_base[*number_of_pgm].filename, filename);
     ignore_comments(pgm_file);
     fscanf(pgm_file, "%s" , data_base[*number_of_pgm].type);
     if(strcmp(data_base[*number_of_pgm].type, "P2"))
@@ -210,13 +213,81 @@ void print_pgm_list(pgm_image *data_base, int number_of_pgm)
         //printf("Image %d: %s\n", i + 1, data_base[i].name);
     }
 }
+void menu2(int *option2)
+{
+    printf("\n1) rotate 90 degree \n2) histogram\n 3) negative\n 4) noise\n 5) filter\n");
+    printf("Type in what you want to do:    ");
+    scanf("%d", &*option2);
+    
+}
+void working_file(int *number_of_pgm)
+{   int a;
+    printf("Podaj plik roboczy:  ");
+    scanf("%d", &a);
+    *number_of_pgm = a-1;
+}
 
+void rotate90(pgm_image * data_base, int *number_of_pgm)
+{
+    int ** temp;
+    temp = malloc(data_base[*number_of_pgm].height*sizeof(int*));
+    for (int i =0; i<data_base[*number_of_pgm].width ;i++)
+    {
+    temp[i]= malloc(data_base[*number_of_pgm].width*sizeof(int));
+    }
+    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    {
+    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
+    {
+        temp[j][data_base[*number_of_pgm].height - 1 - i] = data_base[*number_of_pgm].data[i][j];
+    }
+}
+for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    {
+    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
+    {
+       data_base[*number_of_pgm].data[i][j] = temp[i][j];
+    }
+}
+//print
+printf("number of pgm = %d\n", *number_of_pgm);
+ for (int i = 0 ; i<data_base[*number_of_pgm].height; i++)
+    {
+        for (int j=0 ; j< data_base[*number_of_pgm].width; j++)
+        {
+            printf("%d ", data_base[*number_of_pgm].data[i][j]);
+        }
+        printf("\n");
+    }
+}
+
+int *histogram(pgm_image * data_base, int *number_of_pgm)
+{
+    int histogram[data_base[*number_of_pgm].max+1];
+for (int i = 0; i < data_base[*number_of_pgm].max+1; i++) {
+  histogram[i] = 0;
+}
+     for (int i = 0 ; i<data_base[*number_of_pgm].height; i++)
+    {
+        for (int j=0 ; j< data_base[*number_of_pgm].width; j++)
+        {
+            int number = data_base[*number_of_pgm].data[i][j];
+            histogram[number]++;
+        }
+    }
+    for (int i =0; i<data_base[*number_of_pgm].max+1; i++)
+    {
+        printf(" ammount[%d] = %d", i, histogram[i]);
+    }
+    return histogram;
+}
 
 int main()
 {
-    int option=0;int number_of_pgm=0;pgm_image * pgm; pgm_image *data_base=NULL;
+    int option=0;int option2 = 0;int number_of_pgm=0;pgm_image * pgm; pgm_image *data_base=NULL; int *histogram_num;
     do{
     menu(&option);
+    printf("option = %d", option);
     switch(option)
     {
         /**
@@ -261,7 +332,8 @@ int main()
          * 
          */
         case 3:
-        {
+        {   for(int i=0; i<number_of_pgm; i++)
+            printf("Filename: %s\n", data_base[0+i].filename);
              //print_pgm_list(data_base, number_of_pgm);
         }break;
 
@@ -272,17 +344,52 @@ int main()
          */
         case 4:
         {
-        
+            working_file(&number_of_pgm);
+            do{
+            menu2(&option2);
+            switch(option2)
+            {
+                /**
+                 * @brief ROTATION 90*
+                 * 
+                 */
+                case 1: 
+                {
+                    rotate90(data_base, &number_of_pgm);
+                }
+                case 2:
+                {
+                    histogram_num = histogram(data_base, &number_of_pgm);
+                }
+
+                case 3:
+                {
+
+                }
+
+                case 4:
+                {
+
+                }
+
+                case 5:
+                {
+
+                }
+            }
+            }while(option2 ==1 || option2 ==2 || option2 ==3 || option2 ==4 || option2 == 5);
         }break;
 
         case 5:
         {
         printf("Quitting");
+        for(int i=0; i<number_of_pgm; i++)
+            free(data_base[0+i].filename);
         return 1;
         }break;
         
     }
-    }while(option==1 || option==2 || option==3 || option==4);
+    }while(option==1 || option==2 || option==3);
    // pgm_image* pgm = malloc(sizeof(struct PGM));
    // char *filename = file_name_input();
   //  allocate_data(pgm,filename);

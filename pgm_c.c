@@ -1,3 +1,4 @@
+//MATEUSZ KŁOSIŃSKI 268081  czwartki 11:15-17 piątki 11:15-16
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -116,30 +117,50 @@ void allocate_data(pgm_image*data_base, const char*filename, int *number_of_pgm)
 
 char * file_name_input()
 {
-    printf("please type in file name:   ");
-    char *name, c;
+    char *name;
     int i = 0;
-    name = (char*)malloc(1*sizeof(char));
-    if(name==NULL)
-    {
-        printf("malloc failed!");
-        return 1;
-    }
-    while(c = getc(stdin),c!='\n' && c!=EOF)
-    {
-      name[i] = c;
-      i++;
-      realloc(name,i*sizeof(char));
-      if(name==NULL)
-    {
-        printf("realloc failed!");
-        return 1;
-    }
-    }
-    name[i] = '\0';
-    return name;
 
+    while (1)
+    {
+        printf("please type in file name:   ");
+        name = (char*)malloc(1*sizeof(char));
+        if(name==NULL)
+        {
+            printf("malloc failed!");
+            return NULL;
+        }
+
+        char c;
+        i = 0;
+        while(c = getc(stdin),c!='\n' && c!=EOF)
+        {
+            name[i] = c;
+            i++;
+            realloc(name,i*sizeof(char));
+            if(name==NULL)
+            {
+                printf("realloc failed!");
+                return NULL;
+            }
+        }
+        name[i] = '\0';
+
+        // Check if file with the specified name exists
+        FILE *file = fopen(name, "r");
+        if (file != NULL)
+        {
+            // File found, return the filename
+            fclose(file);
+            return name;
+        }
+        else
+        {
+            // File not found, free the allocated memory and try again
+            free(name);
+        }
+    }
 }
+
 
 /**
  * @brief FUNCTION PRINTING DATA IN STRUCTURE
@@ -180,7 +201,7 @@ void allocate_tab(pgm_image * data_base, int * number_of_pgm)
 }
 void menu(int *option)
 {   
-    printf("\n 1.ADD PGM\n2.DELETE PGM\n3.SHOW LIST PGM\n4.CHOOSE PGM\n6.QUIT\n");
+    printf("\n 1.ADD PGM\n2.DELETE PGM\n3.SHOW LIST PGM\n4.CHOOSE PGM\n5.QUIT\n");
     while (1) {
     printf("Type in what you want to do:    ");
     if (scanf("%d", &*option) == 1) {
@@ -283,49 +304,32 @@ void working_file(int *number_of_pgm)
  */
 void rotate90(pgm_image * data_base, int *number_of_pgm)
 {
-    int ** temp;
-    temp = malloc(data_base[*number_of_pgm].height*sizeof(int*));
-    if(temp == NULL)
-    {
-        printf("\nmalloc failed!");
-        return 1;
-    }
-    for (int i =0; i<data_base[*number_of_pgm].width ;i++)
-    {
-    temp[i]= malloc(data_base[*number_of_pgm].width*sizeof(int));
-    if(temp[i] == NULL)
-    {
-        printf("\nmalloc failed!");
-        return 1;
-    }
-    }
-    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
-    {
-    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
-    {
-        temp[j][data_base[*number_of_pgm].height - 1 - i] = data_base[*number_of_pgm].data[i][j];
-    }
-}
-for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
-    {
-    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
-    {
-       data_base[*number_of_pgm].data[i][j] = temp[i][j];
-    }
-}
-printf("number of pgm = %d\n", *number_of_pgm);
- for (int i = 0 ; i<data_base[*number_of_pgm].height; i++)
-    {
-        for (int j=0 ; j< data_base[*number_of_pgm].width; j++)
-        {
-            printf("%d ", data_base[*number_of_pgm].data[i][j]);
-        }
-        printf("\n");
-    }
-    for (int i = 0; i < data_base[*number_of_pgm].height; i++) {
-    free(temp[i]);
+    int rows = data_base[*number_of_pgm].height;
+    int cols = data_base[*number_of_pgm].width;
+      int **rotated = malloc(sizeof(int *) * cols);
+  for (int i = 0; i < cols; i++) {
+    rotated[i] = malloc(sizeof(int) * rows);
   }
-  free(temp);
+
+  // Rotate the array by copying elements from the original array to the new array
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      rotated[j][rows - i - 1] = data_base[*number_of_pgm].data[i][j];
+    }
+  }
+
+   // // Copy rotated image back to data_base[*number_of_pgm].data
+    for (int i = 0; i < cols; i++) {
+    for (int j = 0; j < rows; j++) {
+      printf("%d ", rotated[i][j]);
+    }
+    printf("\n");
+  }
+  
+    for (int i = 0; i < cols; i++) {
+    free(rotated[i]);
+  }
+  free(rotated);
 }
 
 /**
@@ -390,7 +394,7 @@ void read_to_excel(pgm_image * data_base,int * histogram_num, int *number_of_pgm
 void negative(pgm_image * data_base, int *number_of_pgm)
 {
     int ** temp;
-    temp = malloc(data_base[*number_of_pgm].height*sizeof(int*));
+    temp = malloc(data_base[*number_of_pgm].width*sizeof(int*));
     if(temp == NULL)
     {
         printf("\nmalloc failed!");
@@ -493,7 +497,7 @@ void median_filter(pgm_image * data_base, int *number_of_pgm)
     int ** temp;
     int size =5;
     int kernel[size];
-    temp = malloc(data_base[*number_of_pgm].height*sizeof(int*));
+    temp = malloc(data_base[*number_of_pgm].width*sizeof(int*));
     if(temp == NULL)
     {
         printf("\nmalloc failed!");

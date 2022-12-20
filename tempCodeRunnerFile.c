@@ -1,1 +1,2 @@
-p2
+
+void menu(int *option)

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <time.h>
 //* IF YOU NEED TO SAVE AS MUCH MEMORY AS YOU CAN // 
 //* #pragma pack(1)
 #define file_name_size 1000
@@ -259,11 +260,15 @@ printf("number of pgm = %d\n", *number_of_pgm);
         }
         printf("\n");
     }
+    for (int i = 0; i < data_base[*number_of_pgm].height; i++) {
+    free(temp[i]);
+  }
+  free(temp);
 }
 
 int *histogram(pgm_image * data_base, int *number_of_pgm)
 {
-    int histogram[data_base[*number_of_pgm].max+1];
+    int * histogram = malloc((data_base[*number_of_pgm].max+1) * sizeof(int));
 for (int i = 0; i < data_base[*number_of_pgm].max+1; i++) {
   histogram[i] = 0;
 }
@@ -280,6 +285,149 @@ for (int i = 0; i < data_base[*number_of_pgm].max+1; i++) {
         printf(" ammount[%d] = %d", i, histogram[i]);
     }
     return histogram;
+}
+void read_to_excel(pgm_image * data_base,int * histogram_num, int *number_of_pgm)
+{
+    FILE *file = fopen("histogram.csv", "w");
+    if (file = NULL)
+    {
+        return 1;
+    }
+    for (int i=0; i<data_base[*number_of_pgm].max+1; i++)
+    {
+        fprintf(file, "%d", histogram_num[i]);
+    }
+}
+
+void negative(pgm_image * data_base, int *number_of_pgm)
+{
+    int ** temp;
+    temp = malloc(data_base[*number_of_pgm].height*sizeof(int*));
+    for (int i =0; i<data_base[*number_of_pgm].width ;i++)
+    {
+    temp[i]= malloc(data_base[*number_of_pgm].width*sizeof(int));
+    }
+    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    {
+    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
+        {
+        temp[i][j] = data_base[*number_of_pgm].max - data_base[*number_of_pgm].data[i][j];
+        }
+    }
+
+    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    {
+    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
+    {
+       data_base[*number_of_pgm].data[i][j] = temp[i][j];
+    }
+    }
+    printf("\n");
+    for (int i = 0 ; i<data_base[*number_of_pgm].height; i++)
+    {
+        for (int j=0 ; j< data_base[*number_of_pgm].width; j++)
+        {
+            printf("%d ", data_base[*number_of_pgm].data[i][j]);
+        }
+        printf("\n");
+    }
+     for (int i = 0; i < data_base[*number_of_pgm].height; i++) {
+    free(temp[i]);
+  }
+  free(temp);
+}
+
+void noise(pgm_image * data_base, int *number_of_pgm)
+{
+    srand(time(NULL));
+    printf("type probability to noise: ");
+    int a;
+    scanf("%d", &a);
+    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    {
+    for (int j = 0; j < data_base[*number_of_pgm].width; j++) 
+        {
+            int r = rand()%100+1;
+            if(r<=a)
+            {
+                int random_max_low = rand()%2;
+                if(random_max_low==0)
+                {
+                data_base[*number_of_pgm].data[i][j] = data_base[*number_of_pgm].max;
+                }
+                else data_base[*number_of_pgm].data[i][j] = 0;
+            }
+        }
+    }
+    printf("\n");
+    for (int i = 0 ; i<data_base[*number_of_pgm].height; i++)
+    {
+        for (int j=0 ; j< data_base[*number_of_pgm].width; j++)
+        {
+            printf("%d ", data_base[*number_of_pgm].data[i][j]);
+        }
+        printf("\n");
+    }
+}
+void median_filter(pgm_image * data_base, int *number_of_pgm)
+{
+    int ** temp;
+    int size =5;
+    int kernel[size];
+    temp = malloc(data_base[*number_of_pgm].height*sizeof(int*));
+    for (int i =0; i<data_base[*number_of_pgm].width ;i++)
+    {
+    temp[i]= malloc(data_base[*number_of_pgm].width*sizeof(int));
+    }
+    for (int i = 0; i < data_base[*number_of_pgm].height; i++) 
+    {
+    for (int j = 0; j < data_base[*number_of_pgm].width-4; j++) 
+        {   
+            for (int k =0; k<size; k++)
+            {
+            kernel[k] = data_base[*number_of_pgm].data[i][k+j];
+            }
+            bubble_sort(kernel,size);
+            
+            data_base[*number_of_pgm].data[i][2+j] = kernel[2];
+           // for(int z=0; z<size; z++)
+       // {
+        //    printf("kernel[%d] = %d", z,kernel[z] );
+        //}
+        //printf("\n");
+        }
+        
+        
+        //bubble_sort(kernel,size);
+        
+    }
+    for (int i = 0 ; i<data_base[*number_of_pgm].height; i++)
+    {
+        for (int j=0 ; j< data_base[*number_of_pgm].width; j++)
+        {
+            printf("%d ", data_base[*number_of_pgm].data[i][j]);
+        }
+        printf("\n");
+    }
+}
+void bubble_sort(int array[], int size)
+{
+    for(int i=0; i<size-1; i++)
+    {
+        for(int j=0; j<size-i-1; j++)
+        {
+            if(array[j] > array[j+1])
+            {
+                int temp = array[j];
+                array[j] = array[j+1];
+                array[j+1] = temp;
+            }
+        }
+    }
+    // for (int i = 0; i < size; i++) {
+   // printf("%d ", array[i]);
+ // }
+ // printf("\n");
 }
 
 int main()
@@ -356,26 +504,31 @@ int main()
                 case 1: 
                 {
                     rotate90(data_base, &number_of_pgm);
-                }
+                }break;
                 case 2:
                 {
                     histogram_num = histogram(data_base, &number_of_pgm);
-                }
+                    //read_to_excel(data_base,histogram_num, &number_of_pgm);
+                }break;
 
                 case 3:
                 {
-
-                }
+                    negative(data_base, &number_of_pgm);
+                }break;
 
                 case 4:
                 {
-
-                }
+                    noise(data_base, &number_of_pgm);
+                }break;
 
                 case 5:
                 {
-
-                }
+                    median_filter(data_base, &number_of_pgm);
+                }break;
+                case 6:
+                {
+                    printf("quitting");
+                }break;
             }
             }while(option2 ==1 || option2 ==2 || option2 ==3 || option2 ==4 || option2 == 5);
         }break;
